@@ -1,0 +1,34 @@
+// to start the docker
+sudo docker exec -it mongodb mongosh
+
+
+// ✅ 1. Switch to or create a database
+use example_db
+
+// ✅ 2. Check current database name
+db
+
+// ✅ 3. Show all existing databases
+show dbs
+
+// ✅ 4. Insert multiple documents into 'Subjects' collection
+db.Subjects.insertMany([
+  { "Id": 1, "Code": "ADBMS", "Name": "Advance DBMS" },
+  { "Id": 2, "Code": "AJP", "Name": "Advance JP" }
+])
+
+// ✅ 5. Find and display all documents in 'Subjects' collection
+db.Subjects.find()
+
+// ✅ 6. Insert a single document into 'Students' collection
+db.Students.insertOne({
+  "Id": 1,
+  "Name": "Ram",
+  "Subjects": [1, 2]
+})
+
+// ✅ 7. Drop (delete) the 'Subjects' collection
+db.Subjects.drop()
+
+// ✅ 8. Drop (delete) the entire 'example_db' database
+db.dropDatabase()
