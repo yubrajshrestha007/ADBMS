@@ -1,19 +1,37 @@
-DELIMITER //
+-- Drop if it already exists
+IF OBJECT_ID('dbo.GetCategorySalesPercentage', 'FN') IS NOT NULL
+    DROP FUNCTION dbo.GetCategorySalesPercentage;
 
-CREATE FUNCTION CategorySalesPercent(cat_id INT) RETURNS DECIMAL(5,2)
-DETERMINISTIC
+
+CREATE FUNCTION dbo.GetCategorySalesPercentage (
+    @CategoryId INT
+)
+RETURNS DECIMAL(5,2)
+AS
 BEGIN
-    DECLARE total DECIMAL(10,2);
-    DECLARE category_total DECIMAL(10,2);
+    DECLARE @CategorySales DECIMAL(18,2);
+    DECLARE @TotalSales DECIMAL(18,2);
+    DECLARE @Percentage DECIMAL(5,2);
 
-    SELECT SUM(PaymentTotal) INTO total FROM PurchaseOrder;
-    SELECT SUM(P.PaymentTotal) 
-    INTO category_total 
-    FROM PurchaseOrder P
-    JOIN Product Pr ON P.ProductRef_Id = Pr.ProductId
-    WHERE Pr.ProductCategoryRef_Id = cat_id;
+    -- Get total sales for the specified category
+    SELECT @CategorySales = SUM(po.PaymentTotal)
+    FROM Product p
+    JOIN PurchaseOrder po ON p.ProductId = po.ProductRef_Id
+    WHERE p.ProductCategoryRef_Id = @CategoryId;
 
-    RETURN (category_total / total) * 100;
-END //
+    -- Get total sales across all categories
+    SELECT @TotalSales = SUM(PaymentTotal)
+    FROM PurchaseOrder;
 
-DELIMITER ;
+    -- Avoid NULL or divide-by-zero
+    IF @TotalSales = 0 OR @CategorySales IS NULL
+        SET @Percentage = 0;
+    ELSE
+        SET @Percentage = ROUND((@CategorySales * 100.0) / @TotalSales, 2);
+
+    RETURN @Percentage;
+END;
+
+
+-- Example: Get percentage sales for Category ID = 10
+SELECT dbo.GetCategorySalesPercentage(10) AS SalesPercentage;
